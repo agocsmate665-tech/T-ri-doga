@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ókori Kelet – Interaktív teszt</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#0f172a;color:#e5e7eb}
+.container{max-width:900px;margin:auto;padding:20px}
+header{background:#111827;border:1px solid #334155;border-radius:18px;padding:22px;margin-bottom:18px;position:sticky;top:0;z-index:2}
+h1{margin:0 0 8px;font-size:28px}
+.subtitle{color:#94a3b8}
+.score{font-size:20px;font-weight:bold;margin-top:12px}
+.q{background:#1e293b;border:1px solid #334155;border-radius:15px;padding:18px;margin:14px 0}
+.topic{font-size:13px;color:#38bdf8;font-weight:bold;text-transform:uppercase;margin-bottom:6px}
+.question{font-size:18px;font-weight:bold;margin-bottom:10px}
+.answer{display:block;width:100%;text-align:left;padding:13px;margin:8px 0;border-radius:10px;border:1px solid #475569;background:#0f172a;color:#e5e7eb;cursor:pointer;font-size:16px}
+.answer:hover{background:#263449}
+.answer.correct{background:#14532d;border-color:#22c55e}
+.answer.wrong{background:#7f1d1d;border-color:#ef4444}
+.answer:disabled{cursor:default}
+#result{display:none;background:#172554;border:1px solid #3b82f6;border-radius:15px;padding:20px;margin:18px 0}
+button.restart{width:100%;padding:15px;border:0;border-radius:12px;background:#2563eb;color:white;font-size:17px;font-weight:bold;cursor:pointer;margin:10px 0 30px}
+button.restart:hover{background:#1d4ed8}
+</style>
+</head>
+<body>
+<div class="container">
+<header>
+<h1>🏺 Ókori Kelet – Interaktív teszt</h1>
+<div class="subtitle">Mezopotámia • Egyiptom • India • Kína • Izrael • Asszíria • Perzsia • Fönícia • Palesztina • tudomány és kultúra</div>
+<div class="score" id="score">Pont: 0 / 40</div>
+</header>
+<div id="quiz"></div>
+<div id="result"></div>
+<button class="restart" onclick="restart()">🔄 Teszt újrakezdése</button>
+</div>
+
+<script>
+const questions = [
+["Mezopotámia","Melyik két folyó között alakult ki Mezopotámia?",["Tigris és Eufrátesz","Nílus és Jordán","Indus és Gangesz","Huangho és Jangce"],0],
+["Mezopotámia","Mi volt a zikkurat?",["Lépcsőzetes templomépület","Királyi sír","Erődítmény","Palota"],0],
+["Mezopotámia","Kihez kapcsolódik a híres törvénygyűjtemény?",["Hammurapihoz","Asókához","Dareioszhoz","Dávidhoz"],0],
+["Mezopotámia","Melyik írást használták Mezopotámiában?",["Ékírást","Hieroglifát","Latin betűket","Kínai írásjeleket"],0],
+["Mezopotámia","Melyik város volt az asszírok fővárosa?",["Ninive","Jeruzsálem","Perszepolisz","Memphisz"],0],
+["Egyiptom","Melyik folyó tette lehetővé az egyiptomi civilizáció fejlődését?",["Nílus","Eufrátesz","Jangce","Indus"],0],
+["Egyiptom","Hány napos volt az egyiptomi naptár a jegyzet szerint?",["365 nap","300 nap","360 nap","400 nap"],0],
+["Egyiptom","Mi volt a piramisok egyik fő célja?",["Uralkodók temetkezési helye","Piac","Iskola","Katonai kikötő"],0],
+["Egyiptom","Melyik írás kapcsolódik Egyiptomhoz?",["Hieroglif írás","Ékírás","Föníciai betűírás","Latin írás"],0],
+["Egyiptom","Melyik építményegyütteshez kapcsolódik a Szfinx?",["Gízai piramisok","Ninive","Perszepolisz","Babilon"],0],
+["India","Melyik két folyó kapcsolódik az ókori India civilizációjához?",["Indus és Gangesz","Nílus és Jordán","Tigris és Eufrátesz","Huangho és Jangce"],0],
+["India","Mi volt a kasztrendszer?",["Társadalmi rétegekre osztás","Katonai szövetség","Adórendszer","Naptár"],0],
+["India","Melyik társadalmi réteg állt a kasztrendszer élén?",["Papok, brahmanák","Súdra","Vaisja","Ksatrija"],0],
+["India","Mi a buddhizmus egyik fontos fogalma?",["Nirvána","Szatrapia","Polisz","Mumifikáció"],0],
+["India","Kihez kapcsolódik a buddhizmus tanítása?",["Buddhához","Hammurapihoz","Dávidhoz","Dareioszhoz"],0],
+["India","Kihez kapcsolódik az első egységes indiai állam a jegyzet szerint?",["Asóka","Szolón","Kürosz","Ramszesz"],0],
+["Kína","Melyik két folyó mentén alakult ki az ókori kínai civilizáció?",["Huangho és Jangce","Nílus és Eufrátesz","Indus és Gangesz","Jordán és Nílus"],0],
+["Kína","Kihez kapcsolódik a konfucianizmus?",["Kung Fu-céhez","Buddhához","Lao-céhez","Mózeshez"],0],
+["Kína","Kihez kapcsolódik a taoizmus?",["Lao-céhez","Kung Fu-céhez","Asókához","Hammurapihoz"],0],
+["Kína","Melyik találmány kapcsolódik az ókori Kínához?",["Papír","Beton","Pénzérme","Üveg"],0],
+["Izrael","Ki alapította meg a királyságot a jegyzet szerint?",["Saul","Hammurapi","Asóka","Dareiosz"],0],
+["Izrael","Ki volt Dávid utóda?",["Salamon","Saul","Mózes","Kürosz"],0],
+["Izrael","Melyik város lett a főváros?",["Jeruzsálem","Ninive","Babilon","Türosz"],0],
+["Izrael","Milyen vallás jellemezte az ókori zsidóságot?",["Monoteizmus","Politeizmus","Buddhizmus","Taoizmus"],0],
+["Izrael","Melyik két részre szakadt Salamon után az állam?",["Izrael és Júda","Asszíria és Babilónia","India és Kína","Perzsia és Média"],0],
+["Izrael","Mi történt a babiloni fogság idején?",["A júdai lakosság egy részét Babilonba hurcolták","Egyiptomot elfoglalták","Kína egyesült","A perzsák Indiába költöztek"],0],
+["Asszíria","Mi volt az asszír állam egyik fő ereje?",["Katonai ereje","Tengeri kereskedelme","Kasztrendszere","Piramisépítése"],0],
+["Asszíria","Melyik város volt Asszíria fővárosa?",["Ninive","Türosz","Jeruzsálem","Gíza"],0],
+["Asszíria","Milyen rendszer jellemezte az asszír államot?",["Erős katonai és közigazgatási rendszer","Kasztrendszer","Városállami demokrácia","Nomád törzsszövetség"],0],
+["Perzsia","Kihez kapcsolódik a Perzsa Birodalom kiépítése?",["Küroszhoz és Dareioszhoz","Hammurapihoz","Asókához","Dávidhoz"],0],
+["Perzsia","Hogyan nevezték a Perzsa Birodalom tartományait?",["Szatrapiák","Nomoszok","Poliszok","Kasztok"],0],
+["Perzsia","Melyik volt a perzsák híres központja?",["Perszepolisz","Ninive","Jeruzsálem","Türosz"],0],
+["Perzsia","Mi jellemezte a perzsa vallást a jegyzet szerint?",["Vallási dualizmus","Kasztrendszer","Totemizmus","Poliszrendszer"],0],
+["Fönícia","Miről voltak híresek a föníciaiak?",["Tengeri kereskedelemről és betűírásukról","Piramisépítésről","Kasztrendszerről","Szatrapiákról"],0],
+["Fönícia","Melyik város volt fontos föníciai kereskedőváros?",["Türosz","Ninive","Perszepolisz","Babilon"],0],
+["Palesztina","Melyik folyó és tenger kapcsolódik az ókori Palesztinához?",["Jordán folyó és Holt-tenger","Nílus és Vörös-tenger","Indus és Arab-tenger","Huangho és Sárga-tenger"],0],
+["Tudomány","Melyik területen fejlődött az egyiptomi tudomány az árvizek miatt?",["Mérés és földmérés","Hajóépítés","Kohászat","Textilkészítés"],0],
+["Tudomány","Melyik területen alkalmaztak fejlett számrendszereket Mezopotámiában?",["Matematikában","Festészetben","Hadviselésben","Zenében"],0],
+["Kultúra","Melyik anyagra írtak gyakran Mezopotámiában?",["Agyagtáblára","Selyemre","Papiruszra kizárólag","Pergamenre kizárólag"],0],
+["Államok","Melyik felsorolás tartalmaz az ókori Kelet fontos államait/civilizációit?",["Egyiptom, Mezopotámia, Izrael, Asszíria, Perzsia, India, Kína, Fönícia","Róma, Görögország, Makedónia","Franciaország, Anglia, Spanyolország","Amerika, Kanada, Mexikó"],0]
+];
+
+let score=0, answered=0;
+const quiz=document.getElementById("quiz");
+const scoreEl=document.getElementById("score");
+const result=document.getElementById("result");
+
+function render(){
+  quiz.innerHTML="";
+  questions.forEach((q,i)=>{
+    const box=document.createElement("div");
+    box.className="q";
+    box.innerHTML=`<div class="topic">${q[0]}</div><div class="question">${i+1}. ${q[1]}</div>`;
+
+    // A válaszlehetőségek kérdésenként összekeverednek,
+    // így a helyes válasz nem mindig ugyanott lesz.
+    const options=q[2].map((text,originalIndex)=>({text,originalIndex}));
+    let seed=(i+1)*7919;
+    options.sort(()=>{
+      seed=(seed*9301+49297)%233280;
+      return seed/233280-0.5;
+    });
+
+    options.forEach((opt,j)=>{
+      const b=document.createElement("button");
+      b.className="answer";
+      b.textContent=String.fromCharCode(65+j)+") "+opt.text;
+      b.onclick=()=>answer(box,b,opt.originalIndex===q[3],q[3]);
+      box.appendChild(b);
+    });
+    quiz.appendChild(box);
+  });
+}
+
+function answer(box,button,isCorrect,correct){
+  if(box.dataset.done)return;
+  box.dataset.done="1";
+  answered++;
+  const buttons=box.querySelectorAll(".answer");
+  buttons.forEach(b=>b.disabled=true);
+
+  // A helyes választ zölddel jelöljük, a választott hibásat pirossal.
+  if(isCorrect){
+    button.classList.add("correct");
+    score++;
+  }else{
+    button.classList.add("wrong");
+    // A helyes válasz megkeresése a gomb szövege alapján.
+    const correctText=questions[Array.from(quiz.children).indexOf(box)][2][correct];
+    buttons.forEach(b=>{
+      if(b.textContent.endsWith(") "+correctText)) b.classList.add("correct");
+    });
+  }
+  scoreEl.textContent=`Pont: ${score} / ${questions.length}`;
+  if(answered===questions.length) showResult();
+}
+
+function showResult(){
+  const percent=Math.round(score/questions.length*100);
+  let text="";
+  if(percent>=90)text="🔥 Nagyon erős eredmény!";
+  else if(percent>=70)text="💪 Szép munka!";
+  else if(percent>=50)text="👍 Jó alap!";
+  else text="📚 Érdemes még egyszer átnézni a jegyzeteket.";
+  result.style.display="block";
+  result.innerHTML=`<strong>${text}</strong><br><br>Eredmény: ${score}/${questions.length} (${percent}%)`;
+  result.scrollIntoView({behavior:"smooth",block:"center"});
+}
+
+function restart(){
+  score=0;
+  answered=0;
+  scoreEl.textContent=`Pont: 0 / ${questions.length}`;
+  result.style.display="none";
+  render();
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+render();
+</script>
+</body>
+</html>
